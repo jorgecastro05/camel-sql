@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="datasource" class="org.mariadb.jdbc.MariaDbDataSource">
+        <property name="user" value="user2YN"/>
+        <property name="password" value="WHhqWl2q2g6wIkBX"/>
+        <property name="url" value="jdbc:mariadb://172.30.20.49:3306/sampledb"/>
+    </bean>
+
+    <bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+        <property name="dataSource" ref="datasource"/>
+    </bean>
+
+    <!-- Define a traditional camel context here -->
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="fetch-records">
+            <from uri="sql:select * from projects order by id?consumer.delay=5000"/>
+            <split>
+                <simple>${body}</simple>
+                <log message=">> ID : ${body[ID]}, PROJECT : ${body[PROJECT]}, LICENSE : ${body[LICENSE]}"/>
+            </split>
+        </route>
+
+        <route id="insert-records">
+            <from uri="file://data/sql?noop=true"/>
+            <convertBodyTo type="java.lang.String"/>
+            <split>
+                <tokenize token="\n"/>
+                <log message=">> Record : ${body}"/>
+                <to uri="sql:insert into projects (id, project, license) values (#, #, #)?separator=;"/>
+            </split>
+        </route>
+    </camelContext>
+
+</beans>
