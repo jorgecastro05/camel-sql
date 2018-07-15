@@ -27,7 +27,7 @@
         </route>
 
         <route id="insert-records">
-            <from uri="file://data/sql?noop=true"/>
+            <from uri="file:/data/sql?noop=true"/>
             <convertBodyTo type="java.lang.String"/>
             <split>
                 <tokenize token="\n"/>
